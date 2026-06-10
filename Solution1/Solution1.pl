@@ -27,15 +27,15 @@ uncle(X,Y) :- parent(Z,Y), sibiling(A,Z), female(A), married(X,A) .
 cousin(X,Y) :- parent(Z,Y), sibiling(Z,A), female(A), parent(A,X),male(X). 
 %12 - brother in law
 brother_in_law(X,Y) :- female(Y), married(H,Y), sibiling(X,H), male(X). 
-brother_in_law(X,Y) :- female(Y), sibiling(S,Y), female(S), married(X,S) ,male(X). 
+brother_in_law(X,Y) :- female(Y), sibiling(S,Y), female(S), married(X,S), male(X). 
 brother_in_law(X,Y) :- female(Y), married(H,Y), sibiling(S,H), female(S), married(X,S), male(X).
 brother_in_law(X,Y) :- male(Y), married(Y,W), sibiling(X,W), male(X). 
-brother_in_law(X,Y) :- male(Y), sibiling(S,Y), female(S), married(X,S), male(X).  
+brother_in_law(X,Y) :- male(Y), sibiling(S,Y), female(S), married(X,S), male(X).
 brother_in_law(X,Y) :- male(Y), married(Y,W), sibiling(S,W), female(S), married(X,S), male(X).
 %13 - niece
 niece(X,Y) :- female(X), parent(Z,X), sibiling(Y,Z). 
 %14 - second cousin
 regular_cousin(X,Y) :- parent(P1,X), parent(P2,Y), sibiling(P1,P2). 
-second_cousin(X,Y) :- parent(P1,X), parent(P2,Y), regular_cousin(P1,P2). 
+second_cousin(X,Y) :- parent(PX,X), parent(PY,Y), regular_cousin(PX,PY). 
 %15 - grandmother niece
 grandmother_niece(X,Y) :- grandmother(Z,X),niece(Y,Z).
