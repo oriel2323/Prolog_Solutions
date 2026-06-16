@@ -1,6 +1,6 @@
-% ==========================================
-% שאלה 1.א
-% ==========================================
+% Name: Israel Shteinberg      ID: 215270265
+% Name: Oriel Borgharkar       ID: 337732739
+
 
 % Main predicate: checks validation before calculating
 scum(N, Res) :- 
