@@ -1,20 +1,18 @@
-%Israel Shteinberg   ID:215270265
-%Oriel Borgharkar    ID:337732739
+% ==========================================
+% שאלה 1.א
+% ==========================================
 
-
-%1.a)
-
-scum(N,res) :- 
+% Main predicate: checks validation before calculating
+scum(N, Res) :- 
     % Check if N > 1 (and stop backtracking if true)
     N > 1, !,                
     calculate_scum(N, Res). 
 
 % Error handling: if N is not greater than 1
 scum(N, _) :-
-    N <= 1,
+    N =< 1,
     write('Error: Input N must be greater than 1.'), nl,
-    % Force failure, matching the presentation style
-    fail.                    
+    fail.                     
 
 % Base case: sum from 1 to 2 is 3 (since N > 1, the smallest valid base is 2)
 calculate_scum(2, 3) :- !.
@@ -28,17 +26,19 @@ calculate_scum(N, Res) :-
     Res is SubRes + N.             
 
 
-%1.b) 
+% ==========================================
+% שאלה 1.ב
+% ==========================================
 
 sumDigits(Num,Sum) :- 
     Num >= 0, !,
-    calculate_sum_digits(Num,Sum).
+    calculate_digits_sum(Num,Sum). % Fixed to match the predicate name below
 
 % Error handling: if Num is negative
 sumDigits(Num, _) :-
     Num < 0,
     write('Error: Input Num must be greater than or equal to 0.'), nl,
-    fail.                    % Force failure, matching presentation style
+    fail.                    
 
 % Base case: the sum of digits for 0 is 0
 calculate_digits_sum(0, 0) :- !.
@@ -56,7 +56,9 @@ calculate_digits_sum(Num, Sum) :-
     Sum is SubSum + CurrentDigit.     
 
 
-%2.a) 
+% ==========================================
+% שאלה 2.א
+% ==========================================
 
 split(N,Res) :- 
     N >= 0 , ! ,
@@ -68,8 +70,15 @@ split(N, _) :-
     write('Error: Input N must be greater than or equal to 0.'), nl,
     fail.
 
+% --- All calculate_split clauses are now TOGETHER to fix the warning ---
 % Special case: if the initial number is 0, return [0]
 calculate_split(0, [0]) :- !.
+
+% Helper to trigger the recursive extraction for numbers > 0
+calculate_split(N, Res) :-
+    N > 0,
+    get_digits(N, Res).
+% ---------------------------------------------------------------------
 
 % Base case for recursion: when we finish breaking down a positive number
 get_digits(0, []) :- !.
@@ -86,13 +95,10 @@ get_digits(Num, Res) :-
     % Append current digit to the END of the list
     append(SubRes, [CurrentDigit], Res). 
 
-% Helper to trigger the recursive extraction for numbers > 0
-calculate_split(N, Res) :-
-    N > 0,
-    get_digits(N, Res).
 
-
-%2.b)
+% ==========================================
+% שאלה 2.ב
+% ==========================================
 
 create(List,N) :- 
     % Ensure all elements are valid digits
@@ -121,7 +127,9 @@ calculate_create([Head|Tail], N) :-
     N is (SubN * 10) + Head.         
 
 
-%2.c)
+% ==========================================
+% שאלה 2.ג
+% ==========================================
 
 reverseNumber(Num, RevNum) :-
      % Check if input is valid (>= 0)
@@ -138,7 +146,9 @@ reverseNumber(Num, _) :-
     fail.
 
 
-% 3.a)
+% ==========================================
+% שאלה 3.א
+% ==========================================
 
 % error case: both inputs must be lists.
 intersection(L1, L2, _) :-
@@ -160,7 +170,9 @@ intersection([H|T], L2, Z) :-
     intersection(T, L2, Z).
 
 
-% 3.b)
+% ==========================================
+% שאלה 3.ב
+% ==========================================
 
 % error case: both inputs must be lists.
 minus(L1, L2, _) :-
@@ -182,7 +194,9 @@ minus([H|T], L2, [H|Z]) :-
     minus(T, L2, Z).
 
 
-% 4.a)
+% ==========================================
+% שאלה 4.א
+% ==========================================
 
 % error case: L must be a list.
 subset(_, L) :-
@@ -202,7 +216,9 @@ subset([H|S], [H|T]) :-
     subset(S, T).
 
 
-% 4.b)
+% ==========================================
+% שאלה 4.ב
+% ==========================================
 
 % sum of an empty list is 0.
 sum_list_my([], 0).
@@ -227,5 +243,3 @@ subsum(List, Sum, SubSet) :-
 % same predicate name as in the example.
 subSum(List, Sum, SubSet) :-
     subsum(List, Sum, SubSet).
-
-
