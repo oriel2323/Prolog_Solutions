@@ -2,153 +2,119 @@
 % Name: Oriel Borgharkar       ID: 337732739
 
 
-% Main predicate: checks validation before calculating
-scum(N, Res) :- 
-    % Check if N > 1 (and stop backtracking if true)
-    N > 1, !,                
-    calculate_scum(N, Res). 
+% 1.a)
 
-% Error handling: if N is not greater than 1
+% error case: N must be an integer greater than 1.
 scum(N, _) :-
-    N =< 1,
-    write('Error: Input N must be greater than 1.'), nl,
-    fail.                     
+    ( \+ integer(N) ; N =< 1 ),
+    write('Error: N must be an integer greater than 1.'), nl,
+    fail.
 
-% Base case: sum from 1 to 2 is 3 (since N > 1, the smallest valid base is 2)
-calculate_scum(2, 3) :- !.
+% base case: the sum from 1 to 2 is 3.
+scum(2, 3).
 
-% Recursive case
-calculate_scum(N, Res) :-
-    NextN is N - 1,
-    % Recursive call with N-1
-    calculate_scum(NextN, SubRes), 
-    % Add current N to the subtotal
-    Res is SubRes + N.             
+% recursive step: sum from 1 to N is N plus sum from 1 to N-1.
+scum(N, Res) :-
+    N > 2,
+    N1 is N - 1,
+    scum(N1, Temp),
+    Res is Temp + N.
 
 
-% ==========================================
-% שאלה 1.ב
-% ==========================================
+% 1.b)
 
-sumDigits(Num,Sum) :- 
-    Num >= 0, !,
-    calculate_digits_sum(Num,Sum). % Fixed to match the predicate name below
-
-% Error handling: if Num is negative
+% error case: Num must be a non-negative integer.
 sumDigits(Num, _) :-
-    Num < 0,
-    write('Error: Input Num must be greater than or equal to 0.'), nl,
-    fail.                    
+    ( \+ integer(Num) ; Num < 0 ),
+    write('Error: Num must be an integer greater than or equal to 0.'), nl,
+    fail.
 
-% Base case: the sum of digits for 0 is 0
-calculate_digits_sum(0, 0) :- !.
+% base case: the sum of digits of 0 is 0.
+sumDigits(0, 0).
 
-% Recursive case
-calculate_digits_sum(Num, Sum) :-
+% recursive step: add the last digit to the sum of the rest.
+sumDigits(Num, Sum) :-
     Num > 0,
-    % Get the rightmost digit
-    CurrentDigit is Num mod 10,   
-    % Remove the rightmost digit    
-    RemainingNum is Num // 10,        
-    % Recursive call with the rest of the number
-    calculate_digits_sum(RemainingNum, SubSum),
-    % Add current digit to the subtotal.
-    Sum is SubSum + CurrentDigit.     
+    Digit is Num mod 10,
+    Rest is Num // 10,
+    sumDigits(Rest, Temp),
+    Sum is Temp + Digit.
 
 
-% ==========================================
-% שאלה 2.א
-% ==========================================
+% 2.a)
 
-split(N,Res) :- 
-    N >= 0 , ! ,
-    calculate_split(N, Res).
-
-% Error handling: if N is negative
+% error case: N must be a non-negative integer.
 split(N, _) :-
-    N < 0,
-    write('Error: Input N must be greater than or equal to 0.'), nl,
+    ( \+ integer(N) ; N < 0 ),
+    write('Error: N must be an integer greater than or equal to 0.'), nl,
     fail.
 
-% --- All calculate_split clauses are now TOGETHER to fix the warning ---
-% Special case: if the initial number is 0, return [0]
-calculate_split(0, [0]) :- !.
+% base case: zero becomes a list with zero.
+split(0, [0]).
 
-% Helper to trigger the recursive extraction for numbers > 0
-calculate_split(N, Res) :-
+% split a positive number into its digits.
+split(N, Res) :-
     N > 0,
-    get_digits(N, Res).
-% ---------------------------------------------------------------------
+    split_helper(N, Res).
 
-% Base case for recursion: when we finish breaking down a positive number
-get_digits(0, []) :- !.
+% base case: no more digits left.
+split_helper(0, []).
 
-% Recursive case to extract digits
-get_digits(Num, Res) :-
-    Num > 0,
-    % Get the last digit
-    CurrentDigit is Num mod 10,  
-    % Remove the last digit        
-    RemainingNum is Num // 10, 
-    % Recursive call with the rest          
-    get_digits(RemainingNum, SubRes),    
-    % Append current digit to the END of the list
-    append(SubRes, [CurrentDigit], Res). 
+% recursive step: take the last digit and add it to the end.
+split_helper(N, Res) :-
+    N > 0,
+    Digit is N mod 10,
+    Rest is N // 10,
+    split_helper(Rest, Temp),
+    append(Temp, [Digit], Res).
 
 
-% ==========================================
-% שאלה 2.ב
-% ==========================================
+% 2.b)
 
-create(List,N) :- 
-    % Ensure all elements are valid digits
-    validate_digits(List), !,        
-    calculate_create(List, N).
+% empty list is a valid list of digits.
+digits_list([]).
 
-% Error handling: if the list contains invalid digits
-create(_, _) :-
-    write('Error: Input list must contain digits between 0 and 9 only.'), nl,
+% each element must be a digit between 0 and 9.
+digits_list([H|T]) :-
+    integer(H),
+    H >= 0,
+    H =< 9,
+    digits_list(T).
+
+% error case: List must contain only digits.
+create(List, _) :-
+    ( \+ is_list(List) ; \+ digits_list(List) ),
+    write('Error: List must be a list of digits between 0 and 9.'), nl,
     fail.
 
-% Helper predicate to validate that all items in the list are digits between 0 and 9
-validate_digits([]).
-validate_digits([H|T]) :-
-    integer(H), H >= 0, H =< 9,
-    validate_digits(T).
+% create a number from the list.
+create(List, N) :-
+    create_helper(List, N).
 
-% Base case for calculation: an empty list results in the number 0
-calculate_create([], 0) :- !.
+% base case: empty list creates 0.
+create_helper([], 0).
 
-% Recursive case
-calculate_create([Head|Tail], N) :-
-    % Solve the sub-problem for the rest of the list
-    calculate_create(Tail, SubN), 
-    % Shift sub-result to the left and add current digit   
-    N is (SubN * 10) + Head.         
+% recursive step: the left digit is the units digit.
+create_helper([H|T], N) :-
+    create_helper(T, Temp),
+    N is Temp * 10 + H.
 
 
-% ==========================================
-% שאלה 2.ג
-% ==========================================
+% 2.c)
 
-reverseNumber(Num, RevNum) :-
-     % Check if input is valid (>= 0)
-    Num >= 0, !,          
-    % Step 1: Break number into [5, 8, 4]           
-    split(Num, DigitList),         
-    % Step 2: Reassemble as [5->ones, 8->tens, 4->hundreds] -> 485   
-    create(DigitList, RevNum).        
-
-% Error handling: if the input number is negative
+% error case: Num must be a non-negative integer.
 reverseNumber(Num, _) :-
-    Num < 0,
-    write('Error: Input number must be greater than or equal to 0.'), nl,
+    ( \+ integer(Num) ; Num < 0 ),
+    write('Error: Num must be an integer greater than or equal to 0.'), nl,
     fail.
 
+% split the number and create it back in reverse order.
+reverseNumber(Num, RevNum) :-
+    split(Num, Digits),
+    create(Digits, RevNum).
 
-% ==========================================
-% שאלה 3.א
-% ==========================================
+
+% 3.a)
 
 % error case: both inputs must be lists.
 intersection(L1, L2, _) :-
@@ -170,9 +136,7 @@ intersection([H|T], L2, Z) :-
     intersection(T, L2, Z).
 
 
-% ==========================================
-% שאלה 3.ב
-% ==========================================
+% 3.b)
 
 % error case: both inputs must be lists.
 minus(L1, L2, _) :-
@@ -194,9 +158,7 @@ minus([H|T], L2, [H|Z]) :-
     minus(T, L2, Z).
 
 
-% ==========================================
-% שאלה 4.א
-% ==========================================
+% 4.a)
 
 % error case: L must be a list.
 subset(_, L) :-
@@ -216,9 +178,7 @@ subset([H|S], [H|T]) :-
     subset(S, T).
 
 
-% ==========================================
-% שאלה 4.ב
-% ==========================================
+% 4.b)
 
 % sum of an empty list is 0.
 sum_list_my([], 0).
