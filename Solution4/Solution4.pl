@@ -4,66 +4,91 @@
 
 % 1)
 
-% Version A: No cuts
-min_max(X, Y, X, Y) :- X =< Y.
-min_max(X, Y, Y, X) :- X > Y.
+% Version A: no cuts.
 
-% Version B: Green cut (Optimization only)
-min_max(X, Y, X, Y) :- X =< Y, !.
-min_max(X, Y, Y, X) :- X > Y.
+% if X is smaller or equal to Y, X is the min and Y is the max.
+min_max(X, Y, X, Y) :-
+    X =< Y.
 
-% Version C: Red cut (Changes the logic)
-min_max(X, Y, X, Y) :- X =< Y, !.
-min_max(X, Y, Y, X).
+% otherwise, Y is the min and X is the max.
+min_max(X, Y, Y, X) :-
+    X > Y.
+
+
+% Version B: green cut.
+
+% if X is smaller or equal to Y, there is no need to check the next rule.
+min_max_green(X, Y, X, Y) :-
+    X =< Y,
+    !.
+
+% otherwise, Y is the min and X is the max.
+min_max_green(X, Y, Y, X) :-
+    X > Y.
+
+% Green cut:
+% the cut only prevents useless backtracking.
+
+
+% Version C: red cut.
+
+% if X is smaller or equal to Y, commit to this answer.
+min_max_red(X, Y, X, Y) :-
+    X =< Y,
+    !.
+
+% otherwise, Y is the min and X is the max.
+min_max_red(X, Y, Y, X).
+
+% Red cut:
+% the second rule depends on the cut in the first rule.
 
 
 % 2)
 
 % !1 : Useless
-% It appears before any choice point or variable binding is made,
-% so there is nothing for it to cut.
+% it appears before any real choice is made.
 
 % !2 : Red
-% It commits to the first car found, alpha, before checking whether
-% its price is below 1000. Since alpha costs 1100, Prolog cannot
-% backtrack and try subaru, which costs 990.
+% it commits to the first car before checking the price.
+% alpha costs 1100, so Prolog cannot go back and try subaru.
 
 % !3 : Red
-% It commits to the first car-price combination: alpha and 1100.
-% When Z < 1000 fails, Prolog cannot backtrack to subaru and 990.
+% it commits to the first car-price option before checking Z < 1000.
+% because of that, Prolog cannot try another car.
 
 % !4 : Useless
-% By the time Prolog reaches this cut, subaru is already the last car
-% fact and 990 is already the last price fact.
+% it appears after the important checks are already done.
 
 % !5 : Red
-% It prevents car/1 from backtracking from car(alpha) to car(subaru).
+% it prevents car/1 from checking the next car.
 
 % !6 : Useless
-% Subaru is already the last fact of car/1.
+% subaru is already the last car fact.
 
-% !7 : Red
-% It prevents price/2 from backtracking from price(alpha,1100)
-% to price(subaru,990).
+% !7 : Useless
+% it only cuts choices inside price/2.
+% it does not stop buy/2 from going back to car(subaru).
 
 % !8 : Useless
-% There are no price facts after Subaru's price.
+% subaru price is already the last price fact.
 
 
 % 3)
 
-% A common element exists in both lists.
+% if there is a common element, fail.
 disjoin(L1, L2) :-
     member(X, L1),
     member(X, L2),
     !,
     fail.
 
-% Red cut: without it, Prolog would continue to the next rule
-% and return true even when the lists have a common element.
+% Red cut:
+% without it, Prolog could continue to the next rule and return true.
 
-% No common element was found, so the lists are disjoint.
+% if no common element was found, the lists are disjoint.
 disjoin(_, _).
+
 
 % 4)
 
@@ -85,7 +110,11 @@ merge1([X|T1], [Y|T2], [Y|M]) :-
 
 % Green cut:
 % after X =< Y succeeds, there is no need to check the second rule.
-% it only prevents useless backtracking.
+
+
+% same predicate with the name merge.
+merge(L1, L2, M) :-
+    merge1(L1, L2, M).
 
 
 % 5)
