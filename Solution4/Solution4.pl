@@ -64,3 +64,52 @@ disjoin(L1, L2) :-
 
 % No common element was found, so the lists are disjoint.
 disjoin(_, _).
+
+% 4)
+
+% base case: merging an empty list with L gives L.
+merge1([], L, L).
+
+% base case: merging L with an empty list gives L.
+merge1(L, [], L).
+
+% if X is smaller or equal to Y, take X first.
+merge1([X|T1], [Y|T2], [X|M]) :-
+    X =< Y,
+    !,
+    merge1(T1, [Y|T2], M).
+
+% otherwise, take Y first.
+merge1([X|T1], [Y|T2], [Y|M]) :-
+    merge1([X|T1], T2, M).
+
+% Green cut:
+% after X =< Y succeeds, there is no need to check the second rule.
+% it only prevents useless backtracking.
+
+
+% 5)
+
+% base case: an empty list is already sorted.
+mergesort([], []).
+
+% base case: a list with one element is already sorted.
+mergesort([X], [X]).
+
+% recursive step: split the list, sort both parts, then merge them.
+mergesort(L, LM) :-
+    split_list(L, L1, L2),
+    mergesort(L1, S1),
+    mergesort(L2, S2),
+    merge1(S1, S2, LM).
+
+
+% split an empty list into two empty lists.
+split_list([], [], []).
+
+% split a list with one element.
+split_list([X], [X], []).
+
+% recursive step: put one element in each side.
+split_list([X,Y|T], [X|T1], [Y|T2]) :-
+    split_list(T, T1, T2).
