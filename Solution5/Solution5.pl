@@ -1,137 +1,112 @@
 % Name: Israel Shteinberg      ID: 215270265
-% Name: Oriel Borgharkar       ID: 337732739 
+% Name: Oriel Borgharkar       ID: 337732739
 
 
-% 1) 
+% 1)
 
-% Base case:
-% When only three elements are left, they are the last three elements.
+% base case: when only three elements are left,
+% they are the last three elements.
 three_last([X, Y, Z], X, Y, Z).
 
-% Recursive case:
-% Ignore the first element and continue with the rest of the list.
+% recursive step: ignore the first element and continue.
 three_last([_ | Tail], X, Y, Z) :-
     three_last(Tail, X, Y, Z).
 
-% This is tail recursion.
-% The recursive call is the last operation in the rule.
+% This is tail recursion:
+% the recursive call is the last operation in the rule.
 
 
 % 2)
 
+% regular recursion - union.
 
-%------------------------------------------
-
-%non tail recursion 
-
-
-% Base case:
-% When the first list is empty, the union is the second list.
+% base case: union of an empty list with L2 is L2.
 union([], L2, L2).
 
-% If X already exists in L2, do not add it again.
+% recursive step: first solve the union of the tail.
 union([X | L1], L2, L3) :-
-    member(X, L2),
+    union(L1, L2, Temp),
+    member(X, Temp),
     !,
-    union(L1, L2, L3).
+    L3 = Temp.
 
-% The cut is red:
-% Without it, Prolog could also try the next rule
-% and add X even though it already exists in L2.
+% Green cut:
+% after X is already in Temp, there is no need to try adding it again.
 
-
-% If X does not exist in L2, add it to the result.
-union([X | L1], L2, [X | L3]) :-
-    union(L1, L2, L3).
+% if X is not in Temp, add it to the result.
+union([X | L1], L2, [X | Temp]) :-
+    union(L1, L2, Temp).
 
 
-%------------------------------------------
+% tail recursion - union.
 
-
-%tail recursion 
-
-% The recursive call is the last operation,
-% so this is tail recursion.
-
-% This predicate starts the process with L2 as the accumulator.
+% start with L2 as the accumulator.
 union_tail(L1, L2, L3) :-
     union_acc(L1, L2, L3).
 
-% Base case:
-% When L1 is empty, the accumulator is the final union.
+% base case: when L1 is empty, the accumulator is the answer.
 union_acc([], Acc, Acc).
 
-% If X already exists in the accumulator, do not add it again.
+% if X already exists in the accumulator, skip it.
 union_acc([X | L1], Acc, L3) :-
     member(X, Acc),
     !,
     union_acc(L1, Acc, L3).
 
-% The cut is red:
-% Without it, Prolog may also try the next rule
-% and add X even when it already exists.
+% Green cut:
+% after X is already in Acc, there is no need to try adding it.
 
-% If X does not exist in the accumulator, add it to the accumulator.
+% if X does not exist in the accumulator, add it.
 union_acc([X | L1], Acc, L3) :-
     union_acc(L1, [X | Acc], L3).
 
 
+% 3)
 
+% regular recursion.
 
-% 3) 
-
-% Regular Recursion
-
-% Base case:
-% An empty list returns an empty list.
+% base case: an empty list returns an empty list.
 kuku([], []).
 
-% Recursive case:
-% Convert X to [X, 2X] and place it after the rest.
+% recursive step: convert X to [X, 2X] and put it after the rest.
 kuku([X | L1], L2) :-
     kuku(L1, Rest),
     DoubleX is 2 * X,
     append(Rest, [[X, DoubleX]], L2).
 
 
-%------------------------------------------
+% tail recursion.
 
-
-% Tail Recursion
-
-% Start with an empty accumulator.
+% start with an empty accumulator.
 kuku_tail(L1, L2) :-
     kuku_acc(L1, [], L2).
 
-% Base case:
-% When the list is empty, the accumulator is the result.
+% base case: when the list is empty, the accumulator is the answer.
 kuku_acc([], Acc, Acc).
 
-% Convert X to [X, 2*X] and add it to the accumulator.
+% recursive step: add [X, 2X] to the accumulator.
 kuku_acc([X | L1], Acc, L2) :-
     DoubleX is 2 * X,
     kuku_acc(L1, [[X, DoubleX] | Acc], L2).
 
-% The recursive call is the last operation,
-% so this is tail recursion.
 
+% regular recursion for nested lists.
 
-%------------------------------------------
-
-% Regular Recursion for Nested Lists
-
-% Base case:
-% An empty list returns an empty list.
+% base case: an empty list returns an empty list.
 kuku_nested([], []).
 
-% If X is a number, convert it to [X, 2*X].
+% if X is a number, convert it to [X, 2X].
 kuku_nested([X | L1], L2) :-
     number(X),
+    !,
     kuku_nested(L1, Rest),
     DoubleX is 2 * X,
     append(Rest, [[X, DoubleX]], L2).
 
-% If X is a list, handle the nested list recursively.
+% Green cut:
+% after X is known to be a number, it cannot be a list.
+
+% if X is a list, handle it recursively.
 kuku_nested([X | L1], L2) :-
     is_list(X),
     kuku_nested(X, NewX),
@@ -139,3 +114,71 @@ kuku_nested([X | L1], L2) :-
     append(Rest, [NewX], L2).
 
 
+% 4)
+
+% regular recursion - flattenList.
+
+% base case: an empty list is already flat.
+flattenList([], []).
+
+% if the head is a list, flatten it and also flatten the tail.
+flattenList([X | T], Flat) :-
+    is_list(X),
+    !,
+    flattenList(X, FlatX),
+    flattenList(T, FlatT),
+    append(FlatX, FlatT, Flat).
+
+% Green cut:
+% after X is known to be a list, there is no need to check it as an atom.
+
+% if the head is not a list, keep it.
+flattenList([X | T], [X | FlatT]) :-
+    flattenList(T, FlatT).
+
+
+% tail recursion - flattenList.
+
+% start with an empty accumulator.
+flattenList_tail(L, Flat) :-
+    flatten_acc(L, [], Flat).
+
+% base case: when the list is empty, reverse the accumulator.
+flatten_acc([], Acc, Flat) :-
+    reverse(Acc, Flat).
+
+% if the head is a list, flatten it first.
+flatten_acc([X | T], Acc, Flat) :-
+    is_list(X),
+    !,
+    flatten_acc(X, Acc, NewAcc),
+    flatten_acc(T, NewAcc, Flat).
+
+% Green cut:
+% after X is known to be a list, there is no need to check it as an atom.
+
+% if the head is not a list, add it to the accumulator.
+flatten_acc([X | T], Acc, Flat) :-
+    flatten_acc(T, [X | Acc], Flat).
+
+
+% 5)
+
+% base case: deep reverse of an empty list is empty.
+deepReverse([], []).
+
+% if the head is a list, reverse it deeply.
+deepReverse([X | T], R) :-
+    is_list(X),
+    !,
+    deepReverse(X, RX),
+    deepReverse(T, RT),
+    append(RT, [RX], R).
+
+% Green cut:
+% after X is known to be a list, there is no need to treat it as an atom.
+
+% if the head is not a list, put it at the end.
+deepReverse([X | T], R) :-
+    deepReverse(T, RT),
+    append(RT, [X], R).
